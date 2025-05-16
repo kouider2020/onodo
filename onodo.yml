@@ -1,0 +1,58 @@
+name: Onodo CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:10
+        env:
+          POSTGRES_USER: onodo
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: onodo
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 2.4.3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 12
+
+      - name: Install Ruby and JS dependencies
+        run: |
+          gem update --system 3.2.3
+          gem install bundler -v 1.17.3
+          bundle install
+          yarn install
+
+      - name: Prepare database config
+        run: |
+          cp config/database.yml.github config/database.yml || echo "No custom DB config"
+
+      - name: Set up database
+        run: |
+          bundle exec rake db:create db:migrate db:seed
+
+      - name: Run tests
+        run: |
+          bundle exec rake test
