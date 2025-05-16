@@ -66,6 +66,8 @@ Note: there are [Ruby bindings][2] for igraph, but they haven't been updated in 
 [1]: http://igraph.org
 [2]: https://github.com/alexgutteridge/igraph
 
+
+
 ### Purge & update DB with seed file
 
 Use the following instruction to reset the database if developing natively:
